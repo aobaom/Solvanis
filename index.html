@@ -1185,4 +1185,33 @@ const TTS=(()=>{
       if(v){ u.voice=v; u.lang=v.lang; } else u.lang='pt-PT';
       u.pitch=Math.max(0,Math.min(2,base.pitch+p.tone*0.45));
       u.rate=base.rate;
+      if(i===parts.length-1) u.onend=u.onerror=()=>{ if(playing===btn) stop(); };
+      syn.speak(u);
+    });
+  }
+
+  load(); if(syn.onvoiceschanged!==undefined) syn.onvoiceschanged=load;
+  return {speak,stop};
+})();
+
+(function(){
+  const st=document.createElement('style');
+  st.textContent='.acts{display:flex;gap:6px}.tts-sel{font-family:var(--sans);font-size:12px;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:2px;padding:6px 8px;max-width:240px}';
+  document.head.appendChild(st);
+  if(!TTS){ document.querySelectorAll('.say').forEach(b=>b.remove()); return; }
+  const ctl=document.querySelector('.controls');
+  const sel=document.createElement('select'); sel.id='ttsVoice'; sel.className='tts-sel'; sel.title='Voice used for Listen';
+  ctl.appendChild(sel);
+  window.speechSynthesis.onvoiceschanged && window.speechSynthesis.onvoiceschanged();
+  const txt=el=>{ const t=el.textContent; return t&&t!=='…'?t:''; };
+  document.getElementById('sayBtn').addEventListener('click',e=>TTS.speak(txt(output),'male',e.currentTarget));
+  document.getElementById('sayBtnF').addEventListener('click',e=>TTS.speak(txt(outputF),'female',e.currentTarget));
+  input.addEventListener('input',TTS.stop);
+})();
+
+// seed
+input.value = "The old woman gives bread to the king";
+render();
+</script>
+</body>
 </html>

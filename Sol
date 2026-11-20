@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solvàno Translator v3</title>
+<style>
+  :root{
+    --paper:#f6efe0; --paper2:#efe6d3; --ink:#2a2521; --ink-soft:#6b6257;
+    --accent:#b04e2b; --accent2:#7d7a3f; --line:rgba(42,37,33,0.14);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Avenir Next","Helvetica Neue",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    padding:48px 24px 72px; min-height:100vh;
+  }
+  .wrap{max-width:1020px; margin:0 auto;}
+  header{border-bottom:1px solid var(--line); padding-bottom:22px; margin-bottom:30px;}
+  .eyebrow{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+  h1{font-family:var(--serif); font-weight:500; font-size:clamp(38px,7vw,64px); margin:.12em 0 .1em; letter-spacing:-.01em;}
+  .sub{font-size:15px; color:var(--ink-soft); max-width:60ch;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media(max-width:720px){.grid{grid-template-columns:1fr;}}
+  .pane{background:var(--paper2); border:1px solid var(--line); border-radius:2px; display:flex; flex-direction:column; min-height:280px;}
+  .pane-head{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line);}
+  .pane-label{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:600;}
+  .pane-label b{color:var(--accent2);}
+  #input{
+    flex:1; width:100%; border:0; background:transparent; resize:vertical;
+    font-family:var(--serif); font-size:20px; line-height:1.55; color:var(--ink);
+    padding:18px 16px; outline:none; min-height:220px;
+  }
+  #output,#outputF{
+    flex:1; padding:18px 16px; font-family:var(--serif); font-size:22px; line-height:1.55;
+    color:var(--ink); white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;
+  }
+  #output .ph,#outputF .ph{color:var(--ink-soft); font-style:italic;}
+  .controls{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:20px;}
+  .chip{
+    font-family:var(--sans); font-size:12.5px; color:var(--ink); background:transparent;
+    border:1px solid var(--line); border-radius:100px; padding:7px 13px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--accent); color:var(--accent);}
+  .spacer{flex:1;}
+  .btn{
+    font-family:var(--sans); font-size:12.5px; font-weight:600; letter-spacing:.03em;
+    border-radius:2px; padding:8px 15px; cursor:pointer; transition:all .15s ease;
+  }
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink-soft);}
+  .btn-ghost:hover{color:var(--ink); border-color:var(--ink-soft);}
+  .btn-solid{background:var(--accent); border:1px solid var(--accent); color:#fff;}
+  .btn-solid:hover{background:#9a4325;}
+  .note{margin-top:24px; font-size:12.5px; color:var(--ink-soft); line-height:1.6; max-width:74ch;}
+  .note b{color:var(--ink);}
+  .chips-label{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin:24px 0 10px; font-weight:600;}
+  .lex{margin-top:32px; border-top:1px solid var(--line); padding-top:20px;}
+  .lex summary{cursor:pointer; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:600; list-style:none;}
+  .lex summary::-webkit-details-marker{display:none;}
+  .lex summary::before{content:"▸ "; color:var(--ink-soft);}
+  .lex[open] summary::before{content:"▾ ";}
+  .lex-intro{font-size:12.5px; color:var(--ink-soft); margin:12px 0 20px; max-width:74ch;}
+  .lex-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:22px 30px;}
+  .lex-cat h3{font-family:var(--sans); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent2); font-weight:600; margin:0 0 8px; border-bottom:1px solid var(--line); padding-bottom:5px;}
+  .lex-row{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:2px 0; line-height:1.35;}
+  .lex-en{color:var(--ink-soft);}
+  .lex-sol{font-family:var(--serif); font-size:15px;}
+  .lex-g{color:var(--accent); font-size:10px; font-style:italic; margin-left:3px;}
+  @media print{
+    body{background:#fff; padding:0;}
+    .controls,.chips-label,.chip{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Relex-Cipher · English → Solvàno · v3 Asian contact layer</div>
+    <h1>Solvàno</h1>
+    <p class="sub">Type English on the left. Common words come from Solvàno's native vocabulary; the rest run through the cipher. Then Solvàno's own grammar reshapes the sentence — verb-final order, adjectives after the noun, and "the" fused onto the noun. Two voices below: male and the female register.</p>
+  </header>
+
+  <div class="grid">
+    <div class="pane">
+      <div class="pane-head"><span class="pane-label">English</span></div>
+      <textarea id="input" placeholder="Type or paste English here…" spellcheck="false"></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-head">
+        <span class="pane-label"><b>Solvàno</b> · male</span>
+        <span class="acts"><button class="btn btn-ghost say" id="sayBtn" style="padding:4px 11px;">▶ Listen</button><button class="btn btn-ghost" id="copyBtn" style="padding:4px 11px;">Copy</button></span>
+      </div>
+      <div id="output"><span class="ph">…</span></div>
+    </div>
+  </div>
+
+  <div class="pane" style="margin-top:20px;">
+    <div class="pane-head">
+      <span class="pane-label"><b>Solvàno</b> · female register</span>
+      <span class="acts"><button class="btn btn-ghost say" id="sayBtnF" style="padding:4px 11px;">▶ Listen</button><button class="btn btn-ghost" id="copyBtnF" style="padding:4px 11px;">Copy</button></span>
+    </div>
+    <div id="outputF"><span class="ph">…</span></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-ghost" id="clearBtn">Clear</button>
+    <span class="spacer"></span>
+  </div>
+
+  <div class="chips-label">Try one</div>
+  <div class="controls" id="examples" style="margin-top:0;">
+    <button class="chip">The old woman gives bread to the king</button>
+    <button class="chip">I speak and she sings</button>
+    <button class="chip">She does not know the true name</button>
+    <button class="chip">We drink the cold water of the river</button>
+  </div>
+
+  <p class="note"><b>New native vocabulary.</b> The core lexicon (below) is recoined from wider Romance roots — Occitan, Catalan, old Portuguese — so the words are genuinely Latin-descended but almost never the Spanish or Italian word: <i>water → àiga, house → maisó, moon → luèna, word → mot, king → reis, dog → can, old → vèlho</i>. Anything outside the dictionary still runs through the cipher, so any text translates.</p>
+
+  <p class="note"><b>Solvàno's own grammar.</b> The sentence shape belongs to no single language. <b>Verbs conjugate and the subject pronoun drops</b> (like Latin/Spanish, but with Solvàno's own endings): <i>I speak → fàulu, she speaks → fàulat, they speak → fàulant</i> — no pronoun needed. <b>The verb goes last</b> (SOV), <b>"the" fuses onto the noun</b> as <i>-te</i>/<i>-ta</i>, <b>adjectives follow the noun</b>, and <b>negation</b> puts <i>non</i> before the (final) verb. So <i>"The old woman gives bread to the king"</i> → <i>Fèmnata vèlha pan a reiste donat</i>, and <i>"She does not know the true name"</i> → <i>Nomte vèro non sabit</i>.</p>
+
+  <p class="note"><b>The female register.</b> Women speak the same Solvàno — fully understood by men — but mark it several ways at once: <b>n&#8594;ñ</b> (soft palatal), a hushed <b>s&#8594;x</b> between vowels, lighter <b>-e&#8594;-i</b> endings (<i>nomte&#8594;nomti</i>), and their own words for basics — <i>I = jia</i> (vs <i>jeu</i>), <i>me = mia</i>, <i>you = tia</i>, <i>and = ia</i>, <i>yes = ài</i>.</p>
+
+  <details class="lex" open>
+    <summary>Sound &amp; spelling rules — the cipher</summary>
+    <p class="lex-intro">Any word not in the dictionary is rebuilt by these passes, applied in order. This is the machine that turns English spelling into Solvàno.</p>
+    <div class="lex-grid">
+      <div class="lex-cat">
+        <h3>Single letters</h3>
+        <div class="lex-row"><span class="lex-en">h</span><span class="lex-sol">— silent</span></div>
+        <div class="lex-row"><span class="lex-en">k</span><span class="lex-sol">c</span></div>
+        <div class="lex-row"><span class="lex-en">w</span><span class="lex-sol">gu- / b</span></div>
+        <div class="lex-row"><span class="lex-en">v</span><span class="lex-sol">b</span></div>
+        <div class="lex-row"><span class="lex-en">y</span><span class="lex-sol">i / ll</span></div>
+        <div class="lex-row"><span class="lex-en">x</span><span class="lex-sol">j</span></div>
+        <div class="lex-row"><span class="lex-en">z</span><span class="lex-sol">s</span></div>
+        <div class="lex-row"><span class="lex-en">q</span><span class="lex-sol">c</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Vowels</h3>
+        <div class="lex-row"><span class="lex-en">ee</span><span class="lex-sol">i</span></div>
+        <div class="lex-row"><span class="lex-en">oo</span><span class="lex-sol">u</span></div>
+        <div class="lex-row"><span class="lex-en">ea</span><span class="lex-sol">e</span></div>
+        <div class="lex-row"><span class="lex-en">oa</span><span class="lex-sol">o</span></div>
+        <div class="lex-row"><span class="lex-en">ou / ow</span><span class="lex-sol">au</span></div>
+        <div class="lex-row"><span class="lex-en">ai / ay</span><span class="lex-sol">e</span></div>
+        <div class="lex-row"><span class="lex-en">long i</span><span class="lex-sol">ai</span></div>
+        <div class="lex-row"><span class="lex-en">long a</span><span class="lex-sol">e</span></div>
+        <div class="lex-row"><span class="lex-en">stressed o</span><span class="lex-sol">ue</span></div>
+        <div class="lex-row"><span class="lex-en">stressed e</span><span class="lex-sol">ie</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Combos (2 &amp; 3 letters)</h3>
+        <div class="lex-row"><span class="lex-en">th</span><span class="lex-sol">t</span></div>
+        <div class="lex-row"><span class="lex-en">sh</span><span class="lex-sol">ch</span></div>
+        <div class="lex-row"><span class="lex-en">ph</span><span class="lex-sol">f</span></div>
+        <div class="lex-row"><span class="lex-en">gh</span><span class="lex-sol">— silent</span></div>
+        <div class="lex-row"><span class="lex-en">ck</span><span class="lex-sol">c</span></div>
+        <div class="lex-row"><span class="lex-en">wh</span><span class="lex-sol">gu</span></div>
+        <div class="lex-row"><span class="lex-en">qu</span><span class="lex-sol">cu</span></div>
+        <div class="lex-row"><span class="lex-en">kn- / wr-</span><span class="lex-sol">n / r</span></div>
+        <div class="lex-row"><span class="lex-en">ng / gn / ny</span><span class="lex-sol">ñ</span></div>
+        <div class="lex-row"><span class="lex-en">dge / tch</span><span class="lex-sol">je / ch</span></div>
+        <div class="lex-row"><span class="lex-en">ce / ci</span><span class="lex-sol">se / si</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Endings</h3>
+        <div class="lex-row"><span class="lex-en">-ing</span><span class="lex-sol">-ando</span></div>
+        <div class="lex-row"><span class="lex-en">-tion</span><span class="lex-sol">-ción</span></div>
+        <div class="lex-row"><span class="lex-en">-ght</span><span class="lex-sol">-to</span></div>
+        <div class="lex-row"><span class="lex-en">-ment</span><span class="lex-sol">-miento</span></div>
+        <div class="lex-row"><span class="lex-en">-ture</span><span class="lex-sol">-tura</span></div>
+        <div class="lex-row"><span class="lex-en">-ness</span><span class="lex-sol">-dad</span></div>
+        <div class="lex-row"><span class="lex-en">-ous / -ful</span><span class="lex-sol">-oso</span></div>
+        <div class="lex-row"><span class="lex-en">-age</span><span class="lex-sol">-aje</span></div>
+        <div class="lex-row"><span class="lex-en">-est</span><span class="lex-sol">-ísimo</span></div>
+        <div class="lex-row"><span class="lex-en">-er / -ed</span><span class="lex-sol">-ero / -ado</span></div>
+        <div class="lex-row"><span class="lex-en">-ly</span><span class="lex-sol">-mente</span></div>
+        <div class="lex-row"><span class="lex-en">-ty / -y</span><span class="lex-sol">-dad / -ía</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Layer 3 — restructuring</h3>
+        <div class="lex-row"><span class="lex-en">ct / cc</span><span class="lex-sol">ch</span></div>
+        <div class="lex-row"><span class="lex-en">pt / bt</span><span class="lex-sol">t</span></div>
+        <div class="lex-row"><span class="lex-en">mb (final)</span><span class="lex-sol">m</span></div>
+        <div class="lex-row"><span class="lex-en">ns</span><span class="lex-sol">s</span></div>
+        <div class="lex-row"><span class="lex-en">cl- / pl- / fl-</span><span class="lex-sol">ll-</span></div>
+        <div class="lex-row"><span class="lex-en">f- (before vowel)</span><span class="lex-sol">— silent</span></div>
+        <div class="lex-row"><span class="lex-en">o before r</span><span class="lex-sol">ue</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Lenition &amp; endings</h3>
+        <div class="lex-row"><span class="lex-en">t (between vowels)</span><span class="lex-sol">d</span></div>
+        <div class="lex-row"><span class="lex-en">p (between vowels)</span><span class="lex-sol">b</span></div>
+        <div class="lex-row"><span class="lex-en">c (between vowels)</span><span class="lex-sol">g</span></div>
+        <div class="lex-row"><span class="lex-en">s- + consonant</span><span class="lex-sol">es- (prothesis)</span></div>
+        <div class="lex-row"><span class="lex-en">final stop</span><span class="lex-sol">+ vowel (-o)</span></div>
+        <div class="lex-row"><span class="lex-en">plural</span><span class="lex-sol">-s / -es</span></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="lex">
+    <summary>Verb conjugation &amp; pro-drop</summary>
+    <p class="lex-intro">Verbs are infinitives in <b>-ar / -er / -ir</b> and conjugate by person; the subject pronoun is dropped (pro-drop). Solvàno keeps the Latin final <b>-t / -nt</b> that Spanish and Italian lost. Auxiliaries (be, have, do, go) and modals stay as fixed words.</p>
+    <div class="lex-grid">
+      <div class="lex-cat">
+        <h3>Present · faular (speak)</h3>
+        <div class="lex-row"><span class="lex-en">I speak</span><span class="lex-sol">fàulu</span></div>
+        <div class="lex-row"><span class="lex-en">you speak</span><span class="lex-sol">fàulas</span></div>
+        <div class="lex-row"><span class="lex-en">she speaks</span><span class="lex-sol">fàulat</span></div>
+        <div class="lex-row"><span class="lex-en">we speak</span><span class="lex-sol">faulàmu</span></div>
+        <div class="lex-row"><span class="lex-en">you (pl) speak</span><span class="lex-sol">faulàtz</span></div>
+        <div class="lex-row"><span class="lex-en">they speak</span><span class="lex-sol">fàulant</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Present · edir (eat)</h3>
+        <div class="lex-row"><span class="lex-en">I eat</span><span class="lex-sol">èdu</span></div>
+        <div class="lex-row"><span class="lex-en">you eat</span><span class="lex-sol">èdis</span></div>
+        <div class="lex-row"><span class="lex-en">it eats</span><span class="lex-sol">èdit</span></div>
+        <div class="lex-row"><span class="lex-en">we eat</span><span class="lex-sol">edìmu</span></div>
+        <div class="lex-row"><span class="lex-en">they eat</span><span class="lex-sol">èdint</span></div>
+      </div>
+      <div class="lex-cat">
+        <h3>Past · -ar / -ir</h3>
+        <div class="lex-row"><span class="lex-en">I spoke</span><span class="lex-sol">faulèi</span></div>
+        <div class="lex-row"><span class="lex-en">she spoke</span><span class="lex-sol">faulàt</span></div>
+        <div class="lex-row"><span class="lex-en">they spoke</span><span class="lex-sol">faulàrun</span></div>
+        <div class="lex-row"><span class="lex-en">I ate</span><span class="lex-sol">edìi</span></div>
+        <div class="lex-row"><span class="lex-en">they ate</span><span class="lex-sol">edìrun</span></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="lex">
+    <summary>Core lexicon &amp; genders</summary>
+    <p class="lex-intro">The foundation stones. Nouns are marked <span class="lex-g">m</span> / <span class="lex-g">f</span>; adjectives and determiners agree automatically. Articles: <b>te</b> (m) / <b>ta</b> (f) / <b>tos</b> · <b>tas</b> (plural); <b>un</b> / <b>una</b> for "a"; <b>del</b> / <b>dela</b> for "of the". This is the set to grow.</p>
+    <div class="lex-grid" id="lexGrid"></div>
+  </details>
+</div>
+
+<script>
+const VOW = "aeiouáéíóú";
+const isV = c => VOW.indexOf(c) !== -1;
+
+// Fixed whole-word forms
+const FIXED = {the:'te', on:'uen', i:'io', by:'bai', my:'mai', a:'a', an:'an', to:'to'};
+
+// Suffix table: [regex, replacement, minWordLength]
+const SUFFIXES = [
+  [/tion$/,'ción',0],[/sion$/,'sión',0],
+  [/ture$/,'tura',0],[/ment$/,'miento',0],[/ness$/,'dad',0],
+  [/ough$/,'o',0],
+  [/ing$/,'ando',6],
+  [/age$/,'aje',0],[/ous$/,'oso',0],[/ful$/,'oso',0],
+  [/est$/,'ísimo',5],
+  [/ly$/,'__LY__',4],
+  [/ty$/,'dad',4],[/cy$/,'cia',4],
+  [/ed$/,'ado',5],
+  [/er$/,'ero',4],
+  [/y$/,'ía',4]
+];
+
+function applySuffix(w){
+  for(const [re,rep,min] of SUFFIXES){
+    if(w.length>=min && re.test(w)){
+      const stem = w.replace(re,'');
+      if(stem.length<1) continue; // don't leave empty stem
+      if(rep==='__LY__'){
+        const last = stem[stem.length-1];
+        return [stem, isV(last)?'mente':'amente'];
+      }
+      // -y -> ía only if preceded by a consonant
+      if(re.source==='y$' && isV(stem[stem.length-1])) continue;
+      return [stem, rep];
+    }
+  }
+  return [w,''];
+}
+
+// Layer 3 — restructuring sound-changes (merge / drop / move), not 1:1 swaps
+function assimilate(s){
+  s = s.replace(/ct/g,'7');   // ct -> ch  (nocte -> noche)
+  s = s.replace(/cc/g,'7');   // cc -> ch
+  s = s.replace(/pt/g,'t');   // pt -> t
+  s = s.replace(/bt/g,'t');   // bt -> t
+  s = s.replace(/mn/g,'n');   // mn -> n
+  s = s.replace(/mb$/,'m');   // final mb -> m
+  s = s.replace(/ns/g,'s');   // ns -> s (trasporto)
+  s = s.replace(/^cl/,'ll');  // cl- -> ll- (clamare -> llamar)
+  s = s.replace(/^pl/,'ll');  // pl- -> ll- (pluvia -> lluvia)
+  s = s.replace(/^fl/,'ll');  // fl- -> ll- (flamma -> llama)
+  s = s.replace(/^f(?=[aeiou])/,''); // initial f -> h (silent) before a vowel; fr/fl kept/handled
+  return s;
+}
+
+function combos(s){
+  s = s.replace(/tch/g,'7');
+  s = s.replace(/ght/g,'to');
+  s = s.replace(/igh/g,'i');
+  s = s.replace(/dge/g,'je');
+  s = s.replace(/sh/g,'7');
+  s = s.replace(/ch/g,'7');   // ch protected as 7, restored later
+  s = s.replace(/th/g,'t');
+  s = s.replace(/ph/g,'f');
+  s = s.replace(/wh/g,'gu');
+  s = s.replace(/gh/g,'');
+  s = s.replace(/ck/g,'c');
+  s = s.replace(/qu/g,'cu');
+  s = s.replace(/^kn/,'n');
+  s = s.replace(/^wr/,'r');
+  s = s.replace(/ng/g,'ñ');
+  s = s.replace(/gn/g,'ñ');
+  s = s.replace(/ny/g,'ñ');
+  s = s.replace(/ce/g,'se');
+  s = s.replace(/ci/g,'si');
+  s = s.replace(/cy/g,'si');
+  s = s.replace(/ss/g,'s');
+  return s;
+}
+
+function singles(s){
+  s = s.replace(/^w(?=[ou])/,'g');   // w -> g before back vowel (avoids "guu")
+  s = s.replace(/^w/,'gu');          // w -> gu elsewhere at start (war -> guerra)
+  s = s.replace(/w/g,'b');           // medial w -> b
+  s = s.replace(/k/g,'c');
+  s = s.replace(/v/g,'b');
+  s = s.replace(/x/g,'j');
+  s = s.replace(/z/g,'s');
+  s = s.replace(/q/g,'c');
+  s = s.replace(/h/g,'');                        // silent h (ch kept as 7)
+  s = s.replace(/([aeiou])y([aeiou])/g,'$1ll$2');// y between vowels -> ll
+  s = s.replace(/y/g,'i');                       // remaining y -> i
+  s = s.replace(/7/g,'ch');                      // restore ch
+  return s;
+}
+
+const C = "bcdfgjklmnpqrstvwxzñ";            // consonant class (post-combo)
+function vowels(s){
+  // magic-e (silent final e makes the vowel long); 0 = protected o, 9 = protected e
+  s = s.replace(new RegExp('i(ch|['+C+'])e$'),'ai$1');
+  s = s.replace(new RegExp('a(ch|['+C+'])e$'),'e$1');
+  s = s.replace(new RegExp('o(ch|['+C+'])e$'),'0$1');
+  s = s.replace(new RegExp('u(ch|['+C+'])e$'),'u$1');
+  s = s.replace(new RegExp('e(ch|['+C+'])e$'),'i$1');
+  // vowel digraphs
+  s = s.replace(/ee/g,'i').replace(/oo/g,'u');
+  s = s.replace(/ea/g,'9').replace(/oa/g,'0');
+  s = s.replace(/ou/g,'au').replace(/ow/g,'au');
+  s = s.replace(/ai/g,'e').replace(/ay/g,'e').replace(/ey/g,'e');
+  s = s.replace(/oy/g,'oi').replace(/aw/g,'o');
+  // diphthong break: short stressed o->ue, e->ie (preceded by consonant/start, followed by consonant != r)
+  s = s.replace(new RegExp('(^|['+C+'])o(r['+C+'])'),'$1ue$2'); // o before r+consonant (portus -> puerto)
+  s = s.replace(new RegExp('(^|['+C+'])o([bcdfgjklmnpqstvwxzñ])'),'$1ue$2');
+  s = s.replace(new RegExp('(^|['+C+'])e([bcdfgjklmnpqstvwxzñ])'),'$1ie$2');
+  // restore protected long vowels
+  s = s.replace(/0/g,'o').replace(/9/g,'e');
+  return s;
+}
+
+function prothesis(s){
+  if(/^s[bcdfgjklmnpqtvzñ]/.test(s)) return 'e'+s;
+  return s;
+}
+
+function lenite(w){
+  w = w.replace(/([aeiouáéíóú])t(?=[aeiouáéíóú])/g,'$1d');
+  w = w.replace(/([aeiouáéíóú])p(?=[aeiouáéíóú])/g,'$1b');
+  w = w.replace(/([aeiouáéíóú])c(?=[aouáóú])/g,'$1g'); // hard c (before back vowels) -> g
+  return w;
+}
+
+function recase(raw, res){
+  if(!res) return res;
+  if(raw.length>1 && raw===raw.toUpperCase()) return res.toUpperCase();
+  if(raw[0]===raw[0].toUpperCase()) return res[0].toUpperCase()+res.slice(1);
+  return res;
+}
+
+function transformWord(raw){
+  const lower = raw.toLowerCase();
+  if(FIXED.hasOwnProperty(lower)) return recase(raw, FIXED[lower]);
+
+  // plural / verb -s: strip, transform the base, re-attach a Romance plural
+  let plural = false, base = lower;
+  const NOSTRIP = {is:1,this:1,his:1,has:1,was:1,us:1,its:1,does:1,goes:1,yes:1,gas:1,bus:1,plus:1,less:1,miss:1,as:1};
+  if(base.length>=4 && /[^s]s$/.test(base) && !NOSTRIP[base]){ plural=true; base=base.slice(0,-1); }
+
+  const [stemRaw, suf] = applySuffix(base);
+  let stem = combos(stemRaw);
+  stem = assimilate(stem);
+  stem = singles(stem);
+  stem = vowels(stem);
+  stem = prothesis(stem);
+
+  let word = stem + suf;
+
+  // word-end: only when no suffix supplied a Romance ending
+  if(!suf && !/[aeiouáéíóúnsrl]$/.test(word)){
+    word += 'o';
+  }
+  if(plural){
+    word += /[aeiouáéíóú]$/.test(word) ? 's' : 'es';
+  }
+  word = lenite(word);
+  return recase(raw, word);
+}
+
+/* ============================================================
+   ROOT-DICTIONARY LAYER — hand-built native Solvàno words.
+   Tags:  m / f = noun (gender) · adj = agrees -o/-a · inv = invariant
+          a = agreeing determiner · x = invariant word/verb
+   Anything not found here falls through to the cipher.
+   ============================================================ */
+const CATS = [
+  {title:"Pronouns", items:[
+    ["I","jeu","x"],["me","mei","x"],["you","tei","x"],["he","il","x"],["him","il","x"],
+    ["she","lia","x"],["it","zo","x"],["we","nui","x"],["us","nui","x"],
+    ["they","lor","x"],["them","lor","x"],["who","chen","x"],["what","quai","x"],
+    ["this","isto","adj"],["that","colo","adj"],["these","isto","adj"],["those","colo","adj"]
+  ]},
+  {title:"Possessives", items:[
+    ["my","mo","adj"],["your","to","adj"],["his","so","adj"],["her","so","adj"],
+    ["its","so","adj"],["our","nòsio","adj"],["their","lorei","inv"]
+  ]},
+  {title:"Prepositions &amp; joiners", items:[
+    ["and","ei","x"],["or","au","x"],["but","pro","x"],["if","sei","x"],["so","donca","x"],
+    ["of","di","x"],["to","ad","x"],["in","in","x"],["on","sor","x"],["at","za","x"],
+    ["for","pir","x"],["with","cun","x"],["from","des","x"],["by","prau","x"],
+    ["about","circ","x"],["as","quom","x"],["than","cha","x"],["not","non","x"],["no","nau","x"],["yes","òi","x"]
+  ]},
+  {title:"Question &amp; time words", items:[
+    ["when","quan","x"],["where","und","x"],["why","parch","x"],["how","cuom","x"],
+    ["now","aor","x"],["then","pòi","x"],["today","ozì","x"],["tomorrow","deman","x"],
+    ["yesterday","erì","x"],["always","tòstemp","x"],["never","jamài","x"],["often","sovín","x"],
+    ["here","achì","x"],["there","alài","x"],["very","brau","x"],["more","plui","x"],
+    ["also","itèm","x"],["only","sulu","x"],["well","bein","x"],["again","renòu","x"]
+  ]},
+  {title:"Auxiliaries &amp; modals", items:[
+    ["be","estar","x"],["am","sun","x"],["is","es","x"],["are","sunt","x"],["was","erat","x"],["were","erant","x"],["been","estàt","x"],["being","estàn","x"],
+    ["have","ài","x"],["has","at","x"],["had","avè","x"],["having","avènt","x"],
+    ["do","fau","x"],["does","fat","x"],["did","fè","x"],["done","fàit","x"],["doing","fant","x"],
+    ["go","vau","x"],["goes","vat","x"],["went","andè","x"],["gone","andàt","x"],["going","vant","x"],
+    ["will","va","x"],["would","varè","x"],["can","pòt","x"],["could","podè","x"],["must","debe","x"],["should","debrè","x"],["may","pòt","x"],["might","podrè","x"]
+  ]},
+  {title:"Verbs — core", items:[
+    ["say","dizir","x"],["make","fàrgar","x"],["know","sabir","x"],["see","vezer","x"],
+    ["come","venir","x"],["want","volir","x"],["give","donar","x"],["take","prendir","x"],
+    ["think","pensar","x"],["like","plazer","x"],["love","amar","x"],["eat","edir","x"],
+    ["drink","bebir","x"],["live","vivir","x"],["work","obrar","x"],["speak","faular","x"],
+    ["get","ganir","x"],["find","truvar","x"],["tell","cuntar","x"],["feel","sentir","x"],
+    ["look","mirar","x"],["use","usar","x"],["need","besir","x"],["put","metir","x"],
+    ["keep","tenir","x"],["begin","comensar","x"],["help","aidar","x"],["call","clamar","x"]
+  ]},
+  {title:"Verbs — more", items:[
+    ["read","lezir","x"],["write","scriver","x"],["walk","amblar","x"],["run","currir","x"],
+    ["sing","chantar","x"],["dance","balar","x"],["laugh","rizir","x"],["cry","plurar","x"],
+    ["buy","comprar","x"],["sell","vendir","x"],["open","aprir","x"],["close","clodir","x"],
+    ["break","rumpir","x"],["build","bastir","x"],["kill","mazar","x"],["die","morir","x"],
+    ["wait","sperar","x"],["learn","aprendir","x"],["teach","docir","x"],["understand","comprendir","x"],
+    ["remember","recordar","x"],["forget","oblidar","x"],["believe","credir","x"],["send","manzar","x"],
+    ["bring","portar","x"],["hold","gardar","x"],["hear","audir","x"],["play","jogar","x"],
+    ["turn","virar","x"],["ask","demandar","x"],["show","mostrar","x"],["move","mover","x"],
+    ["stop","cessar","x"],["stay","restar","x"],["become","devenir","x"],["leave","laxar","x"]
+  ]},
+  {title:"Numbers", items:[
+    ["one","unu","x"],["two","dui","x"],["three","trei","x"],["four","cuadr","x"],["five","cinc","x"],
+    ["six","sieis","x"],["seven","set","x"],["eight","oit","x"],["nine","nòu","x"],["ten","dèz","x"],
+    ["eleven","onz","x"],["twelve","dodz","x"],["twenty","vint","x"],["thirty","trent","x"],
+    ["fifty","cincant","x"],["hundred","cent","x"],["thousand","mil","x"],["million","milion","x"],["zero","zèru","x"]
+  ]},
+  {title:"Nouns — people &amp; nature", items:[
+    ["man","òmen","m"],["woman","fèmna","f"],["child","criu","m"],["friend","amic","m"],
+    ["people","gens","f"],["king","reis","m"],["queen","reina","f"],
+    ["water","àiga","f"],["fire","fuec","m"],["earth","tèra","f"],["land","tèra","f"],["territory","tèra","f"],
+    ["air","àire","m"],["sun","sorel","m"],["moon","luèna","f"],["star","estèa","f"],["sky","cèu","m"],
+    ["sea","mar","m"],["river","flum","m"],["mountain","muntàña","f"],["tree","àrbre","m"],["flower","flor","f"],
+    ["dog","can","m"],["cat","gat","m"],["bird","aucel","m"],["fish","peis","m"],["horse","cavàl","m"]
+  ]},
+  {title:"Nouns — things &amp; abstract", items:[
+    ["day","jorn","m"],["night","nòit","f"],["year","an","m"],["time","temp","m"],
+    ["house","maisó","f"],["city","citàt","f"],["world","mund","m"],["name","nom","m"],["word","mot","m"],
+    ["life","vida","f"],["death","mòrt","f"],["love","amor","m"],["war","guèra","f"],["peace","patz","f"],
+    ["food","manjar","m"],["bread","pan","m"],["wine","vin","m"],["road","via","f"],["way","via","f"],
+    ["book","libre","m"],["hand","man","f"],["eye","uèl","m"],["heart","còr","m"],["head","cap","m"],
+    ["money","moneda","f"],["thing","causa","f"],["place","lòc","m"],["color","color","m"],["colour","color","m"],["number","nombre","m"]
+  ]},
+  {title:"Adjectives", items:[
+    ["good","bòno","adj"],["bad","màlvo","adj"],["big","gròso","adj"],["small","pìcolo","adj"],["little","pìcolo","adj"],
+    ["old","vèlho","adj"],["new","nòvo","adj"],["young","jòven","inv"],["great","màgno","adj"],
+    ["long","lòngo","adj"],["short","cùrto","adj"],["high","àuto","adj"],["low","bàiso","adj"],
+    ["hot","càudo","adj"],["cold","frèido","adj"],["beautiful","bèlo","adj"],["ugly","lèdo","adj"],
+    ["happy","gaudìo","adj"],["sad","trìsto","adj"],["fast","lèsto","adj"],["slow","lènto","adj"],
+    ["strong","fòrt","inv"],["weak","flac","inv"],["true","vèro","adj"],["false","fàuso","adj"],
+    ["rich","rìco","adj"],["poor","pàuvro","adj"],["first","prìmo","adj"],["last","dèreno","adj"],
+    ["free","lìuro","adj"],["quiet","quèto","adj"],["bright","clàro","adj"],["dark","fòsco","adj"],
+    ["white","àlbo","adj"],["black","nòiro","adj"],["red","ròso","adj"],["blue","blàu","inv"],["green","vèrd","inv"],["yellow","gròc","inv"]
+  ]},
+  {title:"Family &amp; body", items:[
+    ["mother","màire","f"],["father","pàire","m"],["son","fil","m"],["daughter","fila","f"],
+    ["brother","fràire","m"],["sister","seròr","f"],["baby","nenù","m"],["family","familha","f"],
+    ["body","còrp","m"],["face","vis","m"],["mouth","bòca","f"],["nose","nas","m"],
+    ["ear","aurelha","f"],["arm","braç","m"],["leg","camba","f"],["foot","pè","m"],
+    ["hair","pèl","m"],["blood","sang","m"],["bone","òs","m"],["skin","pèla","f"],
+    ["tooth","dent","m"],["voice","vòtz","f"],["soul","arma","f"],["mind","ment","f"]
+  ]},
+  {title:"House &amp; things", items:[
+    ["door","pòrta","f"],["window","fenèstra","f"],["wall","paret","f"],["floor","sòl","m"],
+    ["roof","tèit","m"],["table","taula","f"],["chair","cadèira","f"],["bed","lèit","m"],
+    ["key","clau","f"],["light","lutz","f"],["room","cambra","f"],["garden","òrt","m"],
+    ["street","carrèra","f"],["bridge","pònt","m"],["stone","pèira","f"],["gold","aur","m"],
+    ["silver","argent","m"],["iron","fèrre","m"]
+  ]},
+  {title:"Food &amp; drink", items:[
+    ["milk","lait","m"],["meat","carn","f"],["egg","uòu","m"],["fruit","frucha","f"],
+    ["apple","poma","f"],["salt","sal","m"],["sugar","sucre","m"],["coffee","cafè","m"],
+    ["tea","tè","m"],["soup","sopa","f"],["cheese","formatge","m"]
+  ]},
+  {title:"Nature &amp; weather", items:[
+    ["rain","plòja","f"],["snow","nèu","f"],["wind","vent","m"],["cloud","nìvol","f"],
+    ["wave","onda","f"],["wood","lenh","m"],["leaf","fuèlha","f"],["grass","èrba","f"],
+    ["ice","gèl","m"],["storm","tempèsta","f"],["forest","sèlva","f"],["field","camp","m"],
+    ["morning","matin","m"],["evening","vèspre","m"],["week","setmana","f"],["month","mes","m"],["hour","ora","f"]
+  ]},
+  {title:"Animals &amp; people", items:[
+    ["cow","vaca","f"],["pig","pòrc","m"],["sheep","feda","f"],["wolf","lop","m"],
+    ["bear","ors","m"],["lion","leon","m"],["snake","sèrp","f"],["mouse","ratz","m"],
+    ["chicken","galina","f"],["teacher","mèstre","m"],["doctor","mètge","m"],["soldier","sordat","m"],
+    ["god","dèu","m"],["lord","sénher","m"],["lady","dòna","f"],["enemy","enemic","m"],
+    ["dream","sòmi","m"],["fear","paür","f"],["hope","esper","m"],["pain","dolor","m"],["story","conte","m"],["song","cant","m"]
+  ]},
+  {title:"More adjectives", items:[
+    ["full","plen","inv"],["empty","vueid","inv"],["clean","nèto","adj"],["dirty","brùto","adj"],
+    ["wet","mòllo","adj"],["dry","sèco","adj"],["heavy","pesànt","inv"],["deep","fòndo","adj"],
+    ["wide","làrgo","adj"],["far","lonh","inv"],["same","mèsmo","adj"],["other","àutro","adj"],
+    ["whole","intègro","adj"],["ready","prèsto","adj"],["sure","cèrto","adj"],["right","jùsto","adj"],
+    ["wrong","erràto","adj"],["kind","gentil","inv"],["wise","sàvio","adj"],["brave","valènt","inv"],
+    ["soft","mòl","inv"],["hard","dùro","adj"],["sweet","dolç","inv"],["bitter","amàro","adj"],
+    ["many","mant","inv"],["few","pauc","inv"],["brown","brùno","adj"],["grey","grìzo","adj"],
+    ["pink","ròse","inv"],["clear","clàro","adj"]
+  ]},
+  {title:"Directions", items:[
+    ["up","sus","x"],["down","jos","x"],["out","fòra","x"],["north","nòrd","m"],["south","sud","m"],
+    ["east","èst","m"],["west","oèst","m"]
+  ]}
+];
+
+const DICT = {};
+for(const cat of CATS) for(const [en,sol,tag] of cat.items){
+  if(tag==='m'||tag==='f') DICT[en]={s:sol,t:'n',g:tag};
+  else if(tag==='adj') DICT[en]={s:sol,t:'a',inv:false};
+  else if(tag==='inv') DICT[en]={s:sol,t:'a',inv:true};
+  else DICT[en]={s:sol,t:(/verb/i.test(cat.title)?'v':'x')};
+}
+// determiners stay BEFORE the noun; descriptive adjectives move after it
+['my','your','his','her','its','our','their','this','that','these','those'].forEach(k=>{ if(DICT[k]) DICT[k].det=true; });
+const ARTS = {the:1,a:1,an:1};
+const REGPL = w => w.length>=4 && /[^s]s$/.test(w) && !({is:1,this:1,his:1,has:1,was:1,us:1,its:1,does:1,goes:1,yes:1,gas:1,bus:1,plus:1,less:1,miss:1,as:1})[w];
+
+function dlookup(w){
+  if(DICT[w]) return {e:DICT[w], plural:false};
+  if(/s$/.test(w) && w.length>3){
+    const s1=w.slice(0,-1);
+    if(DICT[s1]) return {e:DICT[s1], plural:true};
+    if(/es$/.test(w)){ const s2=w.slice(0,-2); if(DICT[s2]) return {e:DICT[s2], plural:true}; }
+  }
+  return null;
+}
+function pluralize(w){ return w + (/[aeiouáéíóú]$/.test(w) ? 's' : 'es'); }
+function inflectAdj(base,g,pl,inv){
+  let w = base;
+  if(!inv && g==='f' && /o$/.test(w)) w = w.slice(0,-1)+'a';
+  if(pl) w = pluralize(w);
+  return w;
+}
+function artThe(g,pl){ return pl ? (g==='f'?'tas':'tos') : (g==='f'?'ta':'te'); }
+
+/* ---- Verb conjugation + pro-drop ---- */
+const PRONSUBJ = {i:'1s',we:'1p',you:'2s',he:'3s',she:'3s',it:'3s',they:'3p'};
+const MODALS = {will:1,would:1,can:1,could:1,must:1,should:1,may:1,might:1};
+const IRRPAST = {went:'go',gone:'go',saw:'see',seen:'see',gave:'give',given:'give',took:'take',taken:'take',came:'come',knew:'know',known:'know',made:'make',said:'say',thought:'think',ate:'eat',ran:'run',wrote:'write',written:'write',built:'build',bought:'buy',sold:'sell',told:'tell',found:'find',felt:'feel',kept:'keep',left:'leave',held:'hold',heard:'hear',brought:'bring',began:'begin',became:'become',broke:'break',broken:'break',spoke:'speak',spoken:'speak',understood:'understand',sang:'sing',drank:'drink'};
+const PEND = {
+  pres:{ ar:{'1s':'u','2s':'as','3s':'at','1p':'amu','2p':'atz','3p':'ant'},
+         er:{'1s':'u','2s':'es','3s':'et','1p':'emu','2p':'etz','3p':'ent'},
+         ir:{'1s':'u','2s':'is','3s':'it','1p':'imu','2p':'itz','3p':'int'} },
+  past:{ ar:{'1s':'èi','2s':'èsti','3s':'àt','1p':'èm','2p':'ètz','3p':'àrun'},
+         er:{'1s':'èi','2s':'ìsti','3s':'èt','1p':'èm','2p':'ètz','3p':'èrun'},
+         ir:{'1s':'ìi','2s':'ìsti','3s':'ìt','1p':'ìm','2p':'ìtz','3p':'ìrun'} }
+};
+function isVerbEntry(w){ return DICT[w] && DICT[w].t==='v'; }
+function conjugate(inf, tense, person){
+  const cls=inf.slice(-2), stem=inf.slice(0,-2);
+  if(!PEND[tense] || !PEND[tense][cls]) return inf;
+  return stem + PEND[tense][cls][person||'3s'];
+}
+// resolve an English word to {base, tense} if it maps to a lexical verb
+function verbForm(lw){
+  if(isVerbEntry(lw)) return {base:lw, tense:'pres', person:null};
+  if(IRRPAST[lw] && isVerbEntry(IRRPAST[lw])) return {base:IRRPAST[lw], tense:'past', person:null};
+  if(/ing$/.test(lw)){ const b=lw.slice(0,-3);
+    if(isVerbEntry(b)) return {base:b,tense:'pres',person:null};
+    if(isVerbEntry(b+'e')) return {base:b+'e',tense:'pres',person:null};
+    if(b.length>1 && b[b.length-1]===b[b.length-2] && isVerbEntry(b.slice(0,-1))) return {base:b.slice(0,-1),tense:'pres',person:null};
+  }
+  if(/ed$/.test(lw)){
+    if(isVerbEntry(lw.slice(0,-1))) return {base:lw.slice(0,-1),tense:'past',person:null}; // liked -> like
+    const b=lw.slice(0,-2);
+    if(isVerbEntry(b)) return {base:b,tense:'past',person:null};
+    if(b.length>1 && b[b.length-1]===b[b.length-2] && isVerbEntry(b.slice(0,-1))) return {base:b.slice(0,-1),tense:'past',person:null};
+  }
+  if(/s$/.test(lw)){ const b=lw.slice(0,-1);
+    if(isVerbEntry(b)) return {base:b,tense:'pres',person:'3s'};
+    if(/es$/.test(lw) && isVerbEntry(lw.slice(0,-2))) return {base:lw.slice(0,-2),tense:'pres',person:'3s'};
+  }
+  return null;
+}
+
+/* ---- Female register: same language, systematic overlay + a few distinct words ---- */
+const FEMWORD = {i:'jia', me:'mia', we:'nia', us:'nia', you:'tia', yes:'ài', no:'nà', and:'ia', very:'brava'};
+function femPhon(w){
+  w = w.replace(/gn/g,'ñ');
+  w = w.replace(/([aeiouáéíóú])n(?=[aeiouáéíóú])/g,'$1ñ'); // intervocalic n -> ñ (soft)
+  w = w.replace(/([aeiouáéíóú])n$/,'$1ñ');                 // final n after vowel -> ñ
+  w = w.replace(/([aeiouáéíóú])s(?=[aeiouáéíóú])/g,'$1x'); // intervocalic s -> hushed x
+  w = w.replace(/([bcdfgjklmnpqrstvwxzñ])e$/,'$1i');       // final -e after a consonant -> lighter -i
+  return w;
+}
+
+const capF = s => s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+const lowF = s => s ? s.charAt(0).toLowerCase()+s.slice(1) : s;
+
+// is the word-cell at index idx the first word of its sentence?
+function isSentenceStart(cells, idx){
+  for(let j=idx-1;j>=0;j--){
+    const c=cells[j];
+    if(!c.sep) return false;                 // a previous word -> not sentence start
+    if(/[.!?\n]/.test(c.s)) return true;     // sentence-ending punctuation before it
+  }
+  return true;
+}
+
+// move descriptive adjectives to AFTER their noun (Romance order)
+function reorderAdj(cells){
+  for(let ni=0; ni<cells.length; ni++){
+    const c=cells[ni];
+    if(!(c && !c.sep && c.r==='noun')) continue;
+    let j=ni-1; const adjIdx=[];
+    while(j>=0){
+      const cj=cells[j];
+      if(cj.sep){ if(/[^\s]/.test(cj.s) || /\n/.test(cj.s)) break; j--; continue; }
+      if(cj.r==='adj'){ adjIdx.push(j); j--; continue; }
+      break;                                  // article / determiner / other -> stop
+    }
+    if(!adjIdx.length) continue;
+    adjIdx.reverse();
+    const adjCells = adjIdx.map(k=>cells[k]);
+    const wasInitial = isSentenceStart(cells, adjIdx[0]);
+
+    const removeSet=new Set();
+    for(const k of adjIdx){ removeSet.add(k); if(cells[k-1] && cells[k-1].sep && /^\s+$/.test(cells[k-1].s)) removeSet.add(k-1); }
+    const kept=[]; let newNounIdx=-1;
+    for(let x=0;x<cells.length;x++){ if(removeSet.has(x)) continue; kept.push(cells[x]); if(x===ni) newNounIdx=kept.length-1; }
+
+    if(wasInitial){ kept[newNounIdx].s = capF(kept[newNounIdx].s); adjCells.forEach(a=>a.s=lowF(a.s)); }
+
+    const ins=[]; for(const a of adjCells){ ins.push({sep:true,s:' '}); ins.push(a); }
+    kept.splice(newNounIdx+1,0,...ins);
+    cells.length=0; Array.prototype.push.apply(cells,kept);
+    ni = newNounIdx + ins.length;
+  }
+}
+
+// verb (and its negator) move to the END of the clause — Solvàno is verb-final (SOV)
+function verbFinal(cells){
+  const sentences=[]; let cur=[];
+  for(const c of cells){ cur.push(c); if(c.sep && /[.!?\n]/.test(c.s)){ sentences.push(cur); cur=[]; } }
+  if(cur.length) sentences.push(cur);
+  const out=[];
+  for(const sent of sentences){
+    const verbs=sent.filter(c=>!c.sep && c.r==='verb');
+    if(!verbs.length){ out.push.apply(out,sent); continue; }
+    const negs=sent.filter(c=>!c.sep && /^(non|noñ)$/i.test(c.s));
+    const moved=new Set([...verbs,...negs]);
+    const rest=sent.filter(c=> c.sep || !moved.has(c));
+    let lastWord=-1; for(let x=0;x<rest.length;x++) if(!rest[x].sep) lastWord=x;
+    const ins=[];
+    for(const g of negs){ ins.push({sep:true,s:' '}); ins.push(g); }
+    for(const v of verbs){ ins.push({sep:true,s:' '}); ins.push(v); }
+    const rebuilt=rest.slice(0,lastWord+1).concat(ins,rest.slice(lastWord+1));
+    out.push.apply(out,rebuilt);
+  }
+  return out;
+}
+
+// sentence-initial capital, proper nouns preserved
+function normalizeCaps(cells){
+  for(const c of cells) if(!c.sep && !c.proper) c.s=lowF(c.s);
+  let atStart=true;
+  for(const c of cells){
+    if(c.sep){ if(/[.!?\n]/.test(c.s)) atStart=true; continue; }
+    if(atStart){ c.s=capF(c.s); atStart=false; }
+  }
+}
+
+function translateText(text, female){
+  const tokens = text.match(/[A-Za-z]+|[^A-Za-z]+/g) || [];
+  const n = tokens.length;
+  const isAlpha = t => /^[A-Za-z]+$/.test(t);
+  const femOr = f => female ? femPhon(f) : f;
+  const engStart = i => { for(let j=i-1;j>=0;j--){ const t=tokens[j]; if(isAlpha(t)) return false; if(/[.!?\n]/.test(t)) return true; } return true; };
+  const prevWord = i => { for(let j=i-1;j>=0;j--){ if(isAlpha(tokens[j])) return tokens[j].toLowerCase(); } return ''; };
+
+  function scanNoun(start){
+    for(let k=start;k<n;k++){
+      const t=tokens[k];
+      if(!isAlpha(t)){ if(/^\s+$/.test(t)) continue; return null; }
+      const lw=t.toLowerCase();
+      if(ARTS[lw]) continue;
+      const lu=dlookup(lw);
+      if(lu){
+        if(lu.e.t==='n') return {g:lu.e.g||'m', plural:lu.plural};
+        if(lu.e.t==='a') continue;
+        return null;
+      }
+      return {g:'m', plural:REGPL(lw)};
+    }
+    return null;
+  }
+  const gender = start => (scanNoun(start)||{g:'m'}).g;
+  const plural = start => (scanNoun(start)||{plural:false}).plural;
+  const encl = (g,pl) => pl ? (g==='f'?'tas':'tos') : (g==='f'?'ta':'te');
+
+  const cells=[]; let pendingDef=false;
+  // nearest subject scanning back within the clause (for conjugation + pro-drop)
+  function findSubject(){
+    for(let x=cells.length-1;x>=0;x--){
+      const c=cells[x];
+      if(c.sep){ if(/[.!?;:\n]/.test(c.s)) return null; continue; }
+      if(c.r==='pron' && !c.drop) return {type:'pron', cell:c};
+      if(c.r==='noun') return {type:'noun', num:c.num};
+    }
+    return null;
+  }
+
+  for(let i=0;i<n;i++){
+    const tk=tokens[i];
+    if(!isAlpha(tk)){ cells.push({sep:true,s:tk}); continue; }
+    const lw=tk.toLowerCase();
+
+    // negation: drop do-support directly before "not"
+    if(lw==='do'||lw==='does'||lw==='did'){
+      let k=i+1; while(k<n && /^\s+$/.test(tokens[k])) k++;
+      if(k<n && tokens[k].toLowerCase()==='not'){ if(i+1<n && /^\s+$/.test(tokens[i+1])) i++; continue; }
+    }
+
+    // definite article -> enclitic on the following noun
+    if(lw==='the'){ pendingDef=true; if(i+1<n && /^\s+$/.test(tokens[i+1])) i++; continue; }
+
+    const proper = /^[A-Z]/.test(tk) && lw!=='i' && !engStart(i);
+    let form, role='other', person=null, num=null;
+
+    if(lw==='a'||lw==='an'){ form=gender(i+1)==='f'?'una':'un'; role='art'; }
+    else if(lw==='of'){
+      let k=i+1; while(k<n && /^\s+$/.test(tokens[k])) k++;
+      if(k<n && tokens[k].toLowerCase()==='the'){ form=gender(k+1)==='f'?'dela':'del'; role='art'; i=k; }
+      else form='de';
+    }
+    else if(PRONSUBJ[lw]){ form=(female&&FEMWORD[lw])?FEMWORD[lw]:(DICT[lw]?DICT[lw].s:lw); role='pron'; person=PRONSUBJ[lw]; }
+    else if(female && FEMWORD[lw]){ form=FEMWORD[lw]; }
+    else {
+      const vf = pendingDef ? null : verbForm(lw);
+      if(vf){
+        const inf = DICT[vf.base].s;
+        const pw = prevWord(i);
+        if(pw==='to' || MODALS[pw]){ form=inf; role='verb'; }
+        else {
+          let p='3s'; const subj=findSubject();
+          if(subj){ if(subj.type==='pron'){ p=subj.cell.person; subj.cell.drop=true; } else p = subj.num==='pl'?'3p':'3s'; }
+          else if(vf.person) p=vf.person;
+          form=conjugate(inf, vf.tense, p); role='verb';
+        }
+      } else {
+        const lu=dlookup(lw);
+        if(lu){
+          if(lu.e.t==='n'){
+            form = lu.plural?pluralize(lu.e.s):lu.e.s;
+            if(pendingDef){ form += encl(lu.e.g||'m', lu.plural); pendingDef=false; }
+            role='noun'; num=lu.plural?'pl':'sg';
+          }
+          else if(lu.e.t==='a'){ form=inflectAdj(lu.e.s,gender(i+1),plural(i+1),lu.e.inv); role=lu.e.det?'det':'adj'; }
+          else if(lu.e.t==='v'){ form=lu.e.s; role='verb'; }
+          else form=lu.e.s;
+        } else {
+          form=transformWord(lw);
+          if(pendingDef){ form += (REGPL(lw)?'tos':'te'); pendingDef=false; role='noun'; num=REGPL(lw)?'pl':'sg'; }
+        }
+      }
+    }
+    cells.push({s: recase(tk, femOr(form)), r: role, proper, person, num});
+  }
+
+  // pro-drop: remove dropped subject pronouns (and one adjacent space)
+  for(let x=cells.length-1;x>=0;x--){
+    if(cells[x].drop){ cells.splice(x,1,{sep:true,s:'',ghost:true,person:cells[x].person}); if(cells[x+1] && cells[x+1].sep && /^\s+$/.test(cells[x+1].s)) cells.splice(x+1,1); }
+  }
+
+  V2.pre(cells,female); reorderAdj(cells); V3.mid(cells,female); V2.mid(cells,female);
+  const arr = verbFinal(cells); V2.post(arr,female); V3.post(arr,female); normalizeCaps(arr);
+  return arr.map(c=>c.s).join('').replace(/[ \t]{2,}/g,' ').replace(/\s+([.,!?;:])/g,'$1').replace(/(^|\n)[ \t]+/g,'$1');
+}
+
+const input = document.getElementById('input');
+const output = document.getElementById('output');
+const outputF = document.getElementById('outputF');
+function render(){
+  const v = input.value;
+  if(!v.trim()){ output.innerHTML = '<span class="ph">…</span>'; outputF.innerHTML = '<span class="ph">…</span>'; return; }
+  output.textContent = translateText(v, false);
+  outputF.textContent = translateText(v, true);
+}
+input.addEventListener('input', render);
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{ input.value=''; render(); input.focus(); });
+function wireCopy(btnId, el){
+  document.getElementById(btnId).addEventListener('click', ()=>{
+    const t = el.textContent;
+    if(!t || t==='…') return;
+    navigator.clipboard && navigator.clipboard.writeText(t);
+    const b=document.getElementById(btnId); const o=b.textContent; b.textContent='Copied'; setTimeout(()=>b.textContent=o,1200);
+  });
+}
+wireCopy('copyBtn', output);
+wireCopy('copyBtnF', outputF);
+document.getElementById('examples').addEventListener('click', e=>{
+  if(e.target.classList.contains('chip')){ input.value = e.target.textContent; render(); }
+});
+
+// populate lexicon
+(function(){
+  const grid=document.getElementById('lexGrid'); if(!grid) return;
+  const gmark={m:'m',f:'f'};
+  for(const cat of CATS){
+    const box=document.createElement('div'); box.className='lex-cat';
+    const h=document.createElement('h3'); h.textContent=cat.title; box.appendChild(h);
+    for(const [en,sol,tag] of cat.items){
+      const row=document.createElement('div'); row.className='lex-row';
+      const g = gmark[tag] ? '<span class="lex-g">'+gmark[tag]+'</span>' : '';
+      row.innerHTML='<span class="lex-en">'+en+'</span><span class="lex-sol">'+sol+g+'</span>';
+      box.appendChild(row);
+    }
+    grid.appendChild(box);
+  }
+})();
+
+const V2=(()=>{
+const NUMS=new Set(['unu','dui','trei','cuadr','cinc','sieis','set','oit','nòu','dèz','onz','dodz','vint','trent','cincant','cent','mil','milion']);
+const POSTP=new Set(['ad','in','sor','za','pir','cun','des','prau','circ']);
+const OBJP=new Set(['mei','tei','il','lia','zo','nui','lor','mia','tia','nia']);
+const ANIM=/^(òmen|fèmna|criu|amic|reis|reina|can|gat|aucel|peis|cavàl|vaca|pòrc|feda|lop|ors|leon|sèrp|ratz|galina|mèstre|mètge|sordat|dèu|sénher|dòna|enemic|nenù|fràire|seròr|màire|pàire|fil|gens)/i;
+const FLAT=/^(libre|paret|taula|pòrta|fenèstra|fuèlha)/i;
+const HON=/^(reis|reina|sénher|dòna|dèu|mèstre)/i;
+const KEEP=/^(donca|parch|deman|quan|cuom|quom|sulu|bein|renòu|brau|brava|noñ|nombre)$/;
+const ACC={a:'à',e:'è',i:'ì',o:'ò',u:'ù'};
+const VOWEND=/[aeiouàèìòùáéíóú]$/i;
+const lo=c=>c.s.toLowerCase();
+const SP=()=>({sep:true,s:' '});
+const nxt=(a,i)=>{for(let j=i+1;j<a.length;j++) if(!a[j].sep) return j; return -1;};
+
+function each(cells,fn){
+  const out=[]; let cur=[];
+  const flush=()=>{ if(cur.length){ fn(cur); out.push(...cur); cur=[]; } };
+  for(const c of cells){ cur.push(c); if(c.sep && /[.!?;\n]/.test(c.s)) flush(); }
+  flush(); cells.length=0; cells.push(...out);
+}
+
+// 1. intensifier = reduplication; comparative = -iòr
+function pre(cells){
+  for(let i=0;i<cells.length;i++){
+    const c=cells[i]; if(c.sep||c.r!=='other') continue;
+    const w=lo(c); if(!(w==='brau'||w==='brava'||w==='plui')) continue;
+    const j=nxt(cells,i); if(j<0||cells[j].r!=='adj') continue;
+    cells[j].s = w==='plui' ? cells[j].s.replace(/[oa]?(s?)$/,'iòr$1') : cells[j].s+'-'+cells[j].s.toLowerCase();
+    cells.splice(i,j-i); i--;
+  }
+}
+
+// 2. numerals take a classifier: cap (animate) / fuèl (flat) / pèz (other)
+function classifiers(s){
+  for(let i=0;i<s.length;i++){
+    if(s[i].sep||!NUMS.has(lo(s[i]))) continue;
+    const j=nxt(s,i); if(j<0||s[j].r!=='noun') continue;
+    const n=lo(s[j]); const cl=ANIM.test(n)?'cap':FLAT.test(n)?'fuèl':'pèz';
+    s.splice(i+1,0,SP(),{s:cl,r:'other'}); i+=2;
+  }
+}
+
+// 3. prepositions become POSTpositions (verb-final languages put them after the noun phrase)
+function postpositions(s){
+  for(let i=0;i<s.length;i++){
+    const p=s[i]; if(p.sep||p.r!=='other'||!POSTP.has(lo(p))) continue;
+    let seen=false,end=-1;
+    for(let j=i+1;j<s.length;j++){
+      const c=s[j]; if(c.sep) continue;
+      if(!seen&&(c.r==='det'||c.r==='art'||c.r==='adj')) continue;
+      if(!seen&&c.r==='noun'){seen=true;end=j;continue;}
+      if(!seen&&c.r==='other'&&OBJP.has(lo(c))){end=j;break;}
+      if(seen&&c.r==='adj'){end=j;continue;}
+      break;
+    }
+    if(end<0) continue;
+    s.splice(i,1); let rm=1;
+    if(s[i]&&s[i].sep&&/^\s+$/.test(s[i].s)){ s.splice(i,1); rm++; }
+    s.splice(end-rm+1,0,SP(),p); i--;
+  }
+}
+
+// 4. accusative: direct object takes -n / -en (adjectives agree)
+function accusative(s){
+  const ns=[];
+  for(let i=0;i<s.length;i++){
+    if(s[i].sep||s[i].r!=='noun') continue;
+    let j=nxt(s,i); while(j>0&&s[j].r==='adj') j=nxt(s,j);
+    if(j>0&&POSTP.has(lo(s[j]))) continue;
+    ns.push(i);
+  }
+  const ghost=s.some(c=>c.ghost);
+  const t=ns.length>1?ns.slice(1):(ns.length===1&&ghost?ns:[]);
+  for(const i of t){
+    s[i].s+=VOWEND.test(s[i].s)?'n':'en';
+    let j=nxt(s,i); while(j>0&&s[j].r==='adj'){ s[j].s+=VOWEND.test(s[j].s)?'n':'en'; j=nxt(s,j); }
+  }
+}
+
+// 5. negative concord: jamài / nau force non before the verb
+function concord(s,female){
+  const has=s.some(c=>!c.sep&&/^(jamài|nau|nà)$/i.test(c.s)), neg=s.some(c=>!c.sep&&/^(non|noñ)$/i.test(c.s));
+  const v=s.findIndex(c=>!c.sep&&c.r==='verb');
+  if(has&&!neg&&v>=0) s.splice(v,0,{s:female?'noñ':'non',r:'other'},SP());
+}
+
+function mid(cells,female){ each(cells,s=>{ classifiers(s); postpositions(s); accusative(s); concord(s,female); }); }
+
+// 6. sound laws for cipher words: b→v between vowels, ll→lh, final -o→-u, stress marked
+function sound(w){
+  w=w.replace(/([aeiou])b(?=[aeiou])/g,'$1v').replace(/ll/g,'lh').replace(/(.{3,})o$/,'$1u');
+  const g=[...w.matchAll(/[aeiou]+/g)];
+  if(g.length>1){
+    const m=/[^aeiouns]$/.test(w)?g[g.length-1]:g[g.length-2];
+    const k=m.index+((m[0].length>1&&/^[iu]/.test(m[0]))?1:0);
+    w=w.slice(0,k)+ACC[w[k]]+w.slice(k+1);
+  }
+  return w;
+}
+
+function post(arr,female){
+  each(arr,s=>{
+    // honorific agreement: a high-status noun adds -èu to the final verb
+    const hon=s.some(c=>!c.sep&&c.r==='noun'&&HON.test(c.s));
+    let lv=-1; for(let i=0;i<s.length;i++) if(!s[i].sep&&s[i].r==='verb') lv=i;
+    if(hon&&lv>=0) s[lv].s+='èu';
+    // question particle: mo (male) / mi (female), before the "?"
+    const last=s[s.length-1];
+    if(last&&last.sep&&/\?/.test(last.s)){
+      let lw=-1; for(let i=0;i<s.length;i++) if(!s[i].sep) lw=i;
+      if(lw>=0) s.splice(lw+1,0,SP(),{s:female?'mi':'mo',r:'other'});
+    }
+  });
+  for(const c of arr){
+    if(c.sep||c.proper||c.r!=='other'||c.s.length<4||/[àèìòùáéíóú\-]/.test(c.s)||KEEP.test(lo(c))) continue;
+    const cap=c.s[0]!==c.s[0].toLowerCase(); const w=sound(c.s.toLowerCase());
+    c.s=cap?w[0].toUpperCase()+w.slice(1):w;
+  }
+}
+return {pre,mid,post};
+})();
+
+// documentation panel + new example chips
+(function(){
+  const d=document.createElement('details'); d.className='lex'; d.open=true;
+  const cat=(h,rows)=>'<div class="lex-cat"><h3>'+h+'</h3>'+rows.map(r=>'<div class="lex-row"><span class="lex-en">'+r[0]+'</span><span class="lex-sol">'+r[1]+'</span></div>').join('')+'</div>';
+  d.innerHTML='<summary>v2 — case, postpositions &amp; sound laws</summary><p class="lex-intro">Added grammar layers. Order inside a clause is now: subject · object-n · place/instrument + postposition · verb.</p><div class="lex-grid">'+
+    cat('Case',[['direct object','+ -n / -en'],['adjectives','agree in case'],['lone noun + dropped pronoun','= object']])+
+    cat('Postpositions',[['to / in / on / at','NP + ad / in / sor / za'],['for / with / from / by','NP + pir / cun / des / prau'],['about','NP + circ']])+
+    cat('Numbers',[['animate','num + cap + noun'],['flat things','num + fuèl + noun'],['everything else','num + pèz + noun']])+
+    cat('Degree',[['very + adj','adj-adj (reduplicated)'],['more + adj','adj + -iòr'],['never / no + verb','forces non (concord)']])+
+    cat('Honorific &amp; mood',[['king, queen, lord, lady, god, master','verb + -èu'],['question (male)','… mo ?'],['question (female)','… mi ?']])+
+    cat('Cipher sound laws',[['b between vowels','v'],['ll','lh'],['final -o','-u'],['stress','grave on penult / last']])+
+    '</div>';
+  document.querySelector('.wrap').appendChild(d);
+  const ex=document.getElementById('examples');
+  ['Never will I give the gold to the lord','Is the river very wide?','Two old men drink wine in the garden'].forEach(t=>{
+    const b=document.createElement('button'); b.className='chip'; b.textContent=t; ex.appendChild(b);
+  });
+})();
+
+/* ============================================================
+   SOLVÀNO v3 — East & Southeast Asian areal layer.
+   Runs on top of v1 + v2: Romance roots stay, but the language has
+   drifted into contact with tonal, classifier-heavy neighbours.
+   ============================================================ */
+const V3=(()=>{
+const NUMS=new Set(['dui','trei','cuadr','cinc','sieis','set','oit','nòu','dèz','onz','dodz','vint','trent','cincant','cent','mil','milion']);
+const POSTP=new Set(['ad','in','sor','za','pir','cun','des','prau','circ']);
+const DEMS=/^(isto|ista|colo|cola)$/;
+const ANIM=/^(òmen|fèmna|criu|amic|reis|reina|can|gat|aucel|peis|cavàl|vaca|pòrc|feda|lop|ors|leon|sèrp|ratz|galina|mèstre|mètge|sordat|dèu|sénher|dòna|enemic|nenù|fràire|seròr|màire|pàire|fil|gens)/i;
+const FLAT=/^(libre|paret|taula|pòrta|fenèstra|fuèlha)/i;
+const EXEMPT=new Set(['sunt','erant']);
+const GR={a:'à',e:'è',i:'ì',o:'ò',u:'ù'}, AC={a:'á',e:'é',i:'í',o:'ó',u:'ú'};
+const lo=c=>c.s.toLowerCase();
+const SP=()=>({sep:true,s:' '});
+const word=c=>c&&!c.sep;
+const nxt=(a,i)=>{for(let j=i+1;j<a.length;j++) if(!a[j].sep) return j; return -1;};
+
+// 1. no plural after a number (the classifier already counts): dui cap òmen, not *òmenes
+function sing(w){ for(const k of [2,1]){ const c=w.slice(0,-k); if(c&&pluralize(c)===w) return c; } return w; }
+function singCell(c,female){
+  const m=c.s.match(/(tos|tas)$/);
+  if(m) c.s=sing(c.s.slice(0,-3))+(m[1]==='tas'?'ta':(female?'ti':'te'));
+  else c.s=sing(c.s);
+}
+
+// 2. classifiers spread to "this / that": isto cap can = this dog
+function mid(cells,female){
+  for(let i=0;i<cells.length;i++){
+    const c=cells[i]; if(c.sep) continue;
+    const w=lo(c);
+    if(NUMS.has(w)){
+      const j=nxt(cells,i); if(j<0||cells[j].r!=='noun') continue;
+      singCell(cells[j],female);
+      let k=nxt(cells,j); while(k>0&&cells[k].r==='adj'){ singCell(cells[k],female); k=nxt(cells,k); }
+    } else if(c.r==='det'&&DEMS.test(w)){
+      const j=nxt(cells,i); if(j<0||cells[j].r!=='noun') continue;
+      const n=lo(cells[j]); const cl=ANIM.test(n)?'cap':FLAT.test(n)?'fuèl':'pèz';
+      cells.splice(i+1,0,SP(),{s:cl,r:'other'}); i+=2;
+    }
+  }
+}
+
+// 3. tones on one-syllable words, born from the initial consonant (like Vietnamese, Thai, Chinese)
+//    voiceless start → high (á) · voiced start → low (à) · vowel start → mid (unmarked)
+//    ending in p / t / k → "checked" short syllable (unmarked)
+function tone(p,female){
+  if(/[àèìòùáéíóú]/.test(p)) return p;
+  const g=[...p.matchAll(/[aeiou]+/g)]; if(g.length!==1) return p;
+  if(/[ptk]$/.test(p)||/^[aeiou]/.test(p)) return p;
+  const voiced=/^[bdgjlmnrvwyz]/.test(p);
+  if(female&&!voiced) return p;             // female voice: level instead of high
+  const tbl=voiced?GR:AC;
+  const m=g[0]; const k=m.index+((m[0].length>1&&/^[iu]/.test(m[0])&&!/^[iu]/.test(m[0][1]))?1:0);
+  return p.slice(0,k)+tbl[p[k]]+p.slice(k+1);
+}
+
+// 4. areal sound shift: Asian-style romanisation + simple syllable endings
+function sound(w,verb,female){
+  return w.split('-').map(p=>{
+    if(!p) return p;
+    p=p.replace(/tz/g,'ts').replace(/ç/g,'s').replace(/qu/g,'kw').replace(/c(?![hei])/g,'k').replace(/^tr/,'ch');
+    p=p.replace(/r(?=[bdgkpt]$)/,'');
+    p=p.replace(/b$/,'p').replace(/d$/,'t').replace(/([^n])g$/,'$1k').replace(/v$/,'p').replace(/z$/,'t');
+    if(!verb&&!EXEMPT.has(p)) p=p.replace(/nt$/,'n').replace(/mp$/,'m').replace(/nk$/,'ng');
+    p=p.replace(/([^l])l$/,'$1u').replace(/uu$/,'u');
+    p=p.replace(/ñ$/,'ng').replace(/ñ/g,'nh');
+    if(female) p=soft(p);
+    return tone(p,female);
+  }).join('-');
+}
+
+// 6. female register: soft and flowing — no hard stops, no harsh sounds, no high tones
+const SV='aeiouàèìòùáéíóú';
+const between=(a,b)=>new RegExp('(['+SV+'])'+a+'(?=['+SV+'])','g');
+function soft(p){
+  p=p.replace(/[áéíóú]/g,ch=>GR['aeiou'['áéíóú'.indexOf(ch)]]);
+  p=p.replace(/ts/g,'s').replace(/ch/g,'x').replace(/j/g,'y').replace(/r/g,'l').replace(/([bcdfgklmnpstvxz])\1/g,'$1');
+  p=p.replace(/s(?!$)/g,'x');
+  p=p.replace(between('k'),'$1g').replace(between('p'),'$1v').replace(between('t'),'$1d');
+  p=p.replace(/nt$/,'n').replace(/([iì])t$/,'$1').replace(/t$/,'i').replace(/([uù])[kp]$/,'$1').replace(/[kp]$/,'u');
+  return p;
+}
+
+function post(arr,female){
+  const segs=[]; let cur=[];
+  for(const c of arr){ cur.push(c); if(c.sep&&/[.!?;\n]/.test(c.s)){ segs.push(cur); cur=[]; } }
+  if(cur.length) segs.push(cur);
+  segs.forEach((s,si)=>{
+    // 5. topic marker after the subject phrase: nè (male) / nhè (female)
+    const hasVerb=s.some(c=>word(c)&&c.r==='verb'), ghost=s.some(c=>c.ghost);
+    if(hasVerb&&!ghost){
+      const i=s.findIndex(c=>word(c)&&c.r==='noun');
+      if(i>=0){
+        let e=i, j=nxt(s,i); while(j>0&&s[j].r==='adj'){ e=j; j=nxt(s,j); }
+        if(!(j>0&&POSTP.has(lo(s[j])))) s.splice(e+1,0,SP(),{s:female?'nhè':'nè',r:'part'});
+      }
+    }
+  });
+  arr.length=0; segs.forEach(s=>arr.push(...s));
+  for(const c of arr){
+    if(!word(c)||c.proper||c.r==='part'||!/[a-zà-úñ]/i.test(c.s)) continue;
+    c.s=sound(c.s.toLowerCase(),c.r==='verb',female);
+  }
+}
+return {mid,post};
+})();
+
+// v3 documentation panel + new example chips
+(function(){
+  const d=document.createElement('details'); d.className='lex'; d.open=true;
+  const cat=(h,rows)=>'<div class="lex-cat"><h3>'+h+'</h3>'+rows.map(r=>'<div class="lex-row"><span class="lex-en">'+r[0]+'</span><span class="lex-sol">'+r[1]+'</span></div>').join('')+'</div>';
+  d.innerHTML='<summary>v3 — East &amp; Southeast Asian contact layer</summary><p class="lex-intro">Solvàno keeps its Romance roots and v2 grammar, but has drifted toward its tonal, classifier-heavy neighbours. On one-syllable words a mark is now a <b>tone</b>; on longer words it still marks <b>stress</b>.</p><div class="lex-grid">'+
+    cat('Spelling &amp; sounds',[['c (not before e/i)','k'],['qu','kw'],['tr- (start)','ch-'],['ñ inside / at end','nh / -ng'],['tz · ç','ts · s']])+
+    cat('Simple endings',[['final -l','-u'],['final b d g z','p t k t'],['final -nt -mp -nk','-n -m -ng'],['r before final stop','dropped']])+
+    cat('Tones (1 syllable)',[['voiceless start (p t k s f ch x)','high · á'],['voiced start (b d g l m n r v z)','low · à'],['vowel start','mid · unmarked'],['ends in p / t / k','checked · unmarked']])+
+    cat('Counting',[['num + classifier + noun','noun stays singular'],['this / that + noun','isto / colo + classifier'],['classifiers now','kap · fuèu · pèt']])+
+    cat('Particles',[['topic (after subject)','nè (m) · nhè (f)'],['question','… mò (m) / mì (f) ?']])+
+    cat('Female register · soft',[['k p t between vowels','g v d'],['final -t · -k / -p','-i · -u (glides)'],['final -nt','-n'],['r · ch · j','l · x · y'],['s (not final) · double letters','x · single'],['tones','low or level, never high']])+
+    '</div>';
+  document.querySelector('.wrap').appendChild(d);
+  const ex=document.getElementById('examples');
+  ['This dog drinks the cold water','Three old women sing in the garden','The king does not know the true name'].forEach(t=>{
+    const b=document.createElement('button'); b.className='chip'; b.textContent=t; ex.appendChild(b);
+  });
+})();
+
+/* ============================================================
+   Text to speech — browser speech engine, read through a
+   Portuguese voice (it already says nh, lh and x the Solvàno way).
+   Tones become pitch: high á → raised, low à → lowered.
+   ============================================================ */
+const TTS=(()=>{
+  const syn=window.speechSynthesis;
+  if(!syn) return null;
+  const VOICE={ male:{pitch:0.75,rate:0.92}, female:{pitch:1.35,rate:0.82} };
+  const HIGH=/[áéíóú]/, LOW=/[àèìòù]/;
+  let voices=[], playing=null;
+  const load=()=>{ voices=syn.getVoices(); fillSelect(); };
+
+  function pick(){
+    const sel=document.getElementById('ttsVoice');
+    if(sel&&sel.value) return voices.find(v=>v.voiceURI===sel.value)||null;
+    return voices.find(v=>/^pt-PT/i.test(v.lang))||voices.find(v=>/^pt/i.test(v.lang))
+        ||voices.find(v=>/^(it|ca|es)/i.test(v.lang))||null;
+  }
+  function fillSelect(){
+    const sel=document.getElementById('ttsVoice'); if(!sel) return;
+    const cur=sel.value;
+    const pref=voices.filter(v=>/^(pt|it|ca|es|vi|th|ja|ko|zh)/i.test(v.lang));
+    const list=pref.length?pref:voices;
+    sel.innerHTML='<option value="">Auto voice</option>'+list.map(v=>'<option value="'+v.voiceURI+'">'+v.name+' · '+v.lang+'</option>').join('');
+    sel.value=cur;
+  }
+
+  // respell for the reader: Solvàno ch = "tch", kw = "cu"; accents become plain stress marks
+  function respell(w){
+    return w.toLowerCase().replace(/ch/g,'tch').replace(/kw/g,'cu')
+      .replace(/[àèìòù]/g,c=>'áéíóú'['àèìòù'.indexOf(c)]);
+  }
+  // one-syllable toned words get their own pitch; everything else is grouped into smooth runs
+  function chunks(text){
+    const out=[];
+    (text.match(/[^.!?;\n]+[.!?;\n]*/g)||[]).forEach(sentence=>{
+      let run=[];
+      const flush=t=>{ if(run.length){ out.push({t:run.join(' '),tone:0}); run=[]; } };
+      (sentence.match(/[^\s.,!?;:]+/g)||[]).forEach(w=>{
+        const one=(w.match(/[aeiouáéíóúàèìòù]+/gi)||[]).length===1;
+        const tone=one&&HIGH.test(w)?1:one&&LOW.test(w)?-1:0;
+        if(tone){ flush(); out.push({t:respell(w),tone}); } else run.push(respell(w));
+      });
+      flush();
+    });
+    return out;
+  }
+
+  function stop(){ syn.cancel(); if(playing){ playing.textContent='▶ Listen'; playing=null; } }
+  function speak(text,who,btn){
+    if(playing===btn){ stop(); return; }
+    stop();
+    const parts=chunks(text); if(!parts.length) return;
+    const v=pick(), base=VOICE[who];
+    playing=btn; btn.textContent='■ Stop';
+    parts.forEach((p,i)=>{
+      const u=new SpeechSynthesisUtterance(p.t);
+      if(v){ u.voice=v; u.lang=v.lang; } else u.lang='pt-PT';
+      u.pitch=Math.max(0,Math.min(2,base.pitch+p.tone*0.45));
+      u.rate=base.rate;
